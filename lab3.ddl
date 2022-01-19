@@ -1,20 +1,12 @@
-DROP TABLE player;
-
-DROP TABLE umpire;
-
-DROP TABLE team;
-
-DROP TABLE OWNER;
-
-DROP TABLE venue;
-
-DROP TABLE match;
-
-DROP TABLE player_match;
-
-DROP TABLE umpire_match;
-
-DROP TABLE ball_by_ball;
+DROP TABLE IF EXISTS player,
+  umpire,
+  team,
+  OWNER,
+  venue,
+  match,
+  player_match,
+  umpire_match,
+  ball_by_ball;
 
 -- Player Information
 CREATE TABLE player (
@@ -53,7 +45,7 @@ CREATE TABLE OWNER (
       AND 100
     ),
   PRIMARY KEY (owner_id),
-  FOREIGN KEY (team_id) REFERENCES team ON DELETE SET NULL,
+  FOREIGN KEY (team_id) REFERENCES team ON DELETE SET NULL
   );
 
 -- Venue Information
@@ -123,9 +115,9 @@ CREATE TABLE umpire_match (
     role_desc = 'Field'
     OR role_desc = 'Third'
     ),
-  PRIMARY KEY (playermatch_key),
+  PRIMARY KEY (umpirematch_key),
   FOREIGN KEY (match_id) REFERENCES match ON DELETE SET NULL,
-  FOREIGN KEY (umpire_id) REFERENCES umpire ON DELETE SET NULL,
+  FOREIGN KEY (umpire_id) REFERENCES umpire ON DELETE SET NULL
   );
 
 -- Ball by ball Information
