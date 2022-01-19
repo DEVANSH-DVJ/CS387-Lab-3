@@ -2,6 +2,7 @@ import argparse
 import csv
 
 import psycopg2 as pg
+from psycopg2.extras import execute_values
 
 files = ['player.csv',
          'umpire.csv',
@@ -30,13 +31,24 @@ def data(cur, data_folder):
             reader = csv.reader(file)
             next(reader)
 
+            # Takes 1.2s
+            # for row in reader:
+            #     try:
+            #         cur.execute('INSERT INTO {} VALUES {}'.format(
+            #             file_name.split('.')[0],
+            #             str(tuple(row))))
+            #     except Exception as error:
+            #         print(error)
+
+            # Takes 0.4s
+            values = []
             for row in reader:
-                try:
-                    cur.execute('INSERT INTO {} VALUES {}'.format(
-                        file_name.split('.')[0],
-                        str(tuple(row))))
-                except Exception as error:
-                    print(error)
+                values.append(tuple(row))
+            sql = 'INSERT INTO ' + file_name.split('.')[0] + ' VALUES %s'
+            try:
+                execute_values(cur, sql, values)
+            except Exception as error:
+                print(error)
 
 
 if __name__ == '__main__':
