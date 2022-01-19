@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS player,
   umpire,
   team,
-  OWNER,
+  owner,
   venue,
   match,
   player_match,
@@ -35,7 +35,7 @@ CREATE TABLE team (
   );
 
 -- Owner Information
-CREATE TABLE OWNER (
+CREATE TABLE owner (
   owner_id INT,
   owner_name TEXT,
   owner_type TEXT,
@@ -144,7 +144,7 @@ CREATE TABLE ball_by_ball (
     OR out_type = 'lbw'
     OR out_type = 'run out'
     OR out_type = 'hit wicket'
-    OR out_type IS NULL
+    OR out_type = NULL
     ),
   striker INT,
   non_striker INT,
@@ -166,7 +166,7 @@ DROP FUNCTION IF EXISTS total_stakes();
 
 CREATE FUNCTION total_stakes() RETURNS trigger AS $total_stakes$
 BEGIN
-  IF NEW.stake > 100 - (SELECT sum(stakes) FROM owner WHERE owner.team_id = NEW.team_id) THEN
+  IF NEW.stake > 100 - (SELECT sum(owner.stake) FROM owner WHERE owner.team_id = NEW.team_id) THEN
     RAISE EXCEPTION 'Total stakes for each team should not exceed 100';
   END IF;
 
@@ -208,7 +208,7 @@ BEGIN
     RAISE EXCEPTION 'At most two Field umpire per match';
   END IF;
   IF NEW.role_desc = 'Third' AND 0 < (SELECT count(*) FROM umpire_match AS um WHERE um.match_id = NEW.match_id AND um.role_desc = 'Third') THEN
-    RAISE EXCEPTION 'At most two Field umpire per match';
+    RAISE EXCEPTION 'At most one Third umpire per match';
   END IF;
   RETURN NEW;
 END;
