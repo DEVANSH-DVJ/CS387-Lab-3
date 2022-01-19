@@ -1,23 +1,22 @@
-DROP TABLE ball_by_ball;
+DROP TABLE player;
 
-DROP TABLE player_match;
-
-DROP TABLE match;
+DROP TABLE umpire;
 
 DROP TABLE team;
 
-DROP TABLE player;
+DROP TABLE OWNER;
 
 DROP TABLE venue;
 
---Team id and name
-CREATE TABLE team (
-  team_id INT,
-  team_name TEXT,
-  PRIMARY KEY (team_id)
-  );
+DROP TABLE match;
 
---Player information
+DROP TABLE player_match;
+
+DROP TABLE umpire_match;
+
+DROP TABLE ball_by_ball;
+
+-- Player Information
 CREATE TABLE player (
   player_id INT,
   player_name TEXT,
@@ -28,22 +27,52 @@ CREATE TABLE player (
   PRIMARY KEY (player_id)
   );
 
---Venue information
+-- Umpire Information
+CREATE TABLE umpire (
+  umpire_id INT,
+  umpire_name TEXT,
+  country_name TEXT,
+  PRIMARY KEY (umpire_id)
+  );
+
+-- Team Information
+CREATE TABLE team (
+  team_id INT,
+  team_name TEXT,
+  PRIMARY KEY (team_id)
+  );
+
+-- Owner Information
+CREATE TABLE OWNER (
+  owner_id INT,
+  owner_name TEXT,
+  owner_type TEXT,
+  team_id INT,
+  stake INT CHECK (
+    stake BETWEEN 0
+      AND 100
+    ),
+  PRIMARY KEY (owner_id),
+  FOREIGN KEY (team_id) REFERENCES team ON DELETE SET NULL,
+  );
+
+-- Venue Information
 CREATE TABLE venue (
   venue_id INT,
   venue_name TEXT,
   city_name TEXT,
   country_name TEXT,
+  capacity INT,
   PRIMARY KEY (venue_id)
   );
 
---Match information
+-- Match Information
 CREATE TABLE match (
   match_id INT,
   season_year INT,
   team1 INT,
   team2 INT,
-  venue_Id INT,
+  venue_id INT,
   toss_winner INT,
   match_winner INT,
   toss_name TEXT CHECK (
@@ -57,6 +86,7 @@ CREATE TABLE match (
     ),
   man_of_match INT,
   win_margin INT,
+  attendance INT,
   PRIMARY KEY (match_id),
   FOREIGN KEY (venue_id) REFERENCES venue ON DELETE SET NULL,
   FOREIGN KEY (team1) REFERENCES team ON DELETE SET NULL,
@@ -66,7 +96,7 @@ CREATE TABLE match (
   FOREIGN KEY (man_of_match) REFERENCES player ON DELETE SET NULL
   );
 
---For each match contains all players along with their role and team
+-- Player to Match Relation
 CREATE TABLE player_match (
   playermatch_key BIGINT,
   match_id INT,
@@ -84,7 +114,21 @@ CREATE TABLE player_match (
   FOREIGN KEY (team_id) REFERENCES team ON DELETE SET NULL
   );
 
---Information for each ball
+-- Umpire to Match Relation
+CREATE TABLE umpire_match (
+  umpirematch_key BIGINT,
+  match_id INT,
+  umpire_id INT,
+  role_desc TEXT CHECK (
+    role_desc = 'Field'
+    OR role_desc = 'Third'
+    ),
+  PRIMARY KEY (playermatch_key),
+  FOREIGN KEY (match_id) REFERENCES match ON DELETE SET NULL,
+  FOREIGN KEY (umpire_id) REFERENCES umpire ON DELETE SET NULL,
+  );
+
+-- Ball by ball Information
 CREATE TABLE ball_by_ball (
   match_id INT,
   innings_no INT CHECK (
