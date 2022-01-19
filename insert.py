@@ -15,8 +15,8 @@ def ddl(cur, ddl_file):
 
     try:
         cur.execute(crt)
-    except Exception as error:
-        print(error)
+    except Exception:
+        pass
 
 
 def data(cur, data_folder):
@@ -25,22 +25,14 @@ def data(cur, data_folder):
             reader = csv.reader(file)
             next(reader)
 
-            # Takes 1.2s
-            # for row in reader:
-            #     try:
-            #         cur.execute('INSERT INTO {} VALUES {}'.format(table, str(tuple(row))))
-            #     except Exception as error:
-            #         print(error)
-
-            # Takes 0.4s
             values = []
             for row in reader:
-                values.append(tuple(row))
+                values.append(tuple([None if x == 'NULL' else x for x in row]))
             sql = 'INSERT INTO {} VALUES %s'.format(table)
             try:
                 execute_values(cur, sql, values)
-            except Exception as error:
-                print(error)
+            except Exception:
+                pass
 
 
 if __name__ == '__main__':

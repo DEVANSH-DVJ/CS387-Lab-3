@@ -144,7 +144,7 @@ CREATE TABLE ball_by_ball (
     OR out_type = 'lbw'
     OR out_type = 'run out'
     OR out_type = 'hit wicket'
-    OR out_type = NULL
+    OR out_type IS NULL
     ),
   striker INT,
   non_striker INT,
