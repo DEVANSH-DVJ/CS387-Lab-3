@@ -11,12 +11,7 @@ tables = ['player', 'umpire', 'team', 'owner', 'venue', 'match',
 
 def ddl(cur, ddl_file):
     with open(ddl_file, 'r') as file:
-        crt = file.read()
-
-    try:
-        cur.execute(crt)
-    except Exception:
-        pass
+        cur.execute(file.read())
 
 
 def data(cur, data_folder):
@@ -29,10 +24,7 @@ def data(cur, data_folder):
             for row in reader:
                 values.append(tuple([None if x == 'NULL' else x for x in row]))
             sql = 'INSERT INTO {} VALUES %s'.format(table)
-            try:
-                execute_values(cur, sql, values)
-            except Exception:
-                pass
+            execute_values(cur, sql, values)
 
 
 if __name__ == '__main__':

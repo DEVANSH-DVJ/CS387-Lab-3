@@ -149,12 +149,7 @@ CREATE TABLE ball_by_ball (
   striker INT,
   non_striker INT,
   bowler INT,
-  PRIMARY KEY (
-    match_id,
-    innings_no,
-    over_id,
-    ball_id
-    ),
+  PRIMARY KEY (match_id, innings_no, over_id, ball_id),
   FOREIGN KEY (match_id) REFERENCES match ON DELETE SET NULL,
   FOREIGN KEY (striker) REFERENCES player ON DELETE SET NULL,
   FOREIGN KEY (non_striker) REFERENCES player ON DELETE SET NULL,
@@ -163,10 +158,11 @@ CREATE TABLE ball_by_ball (
 
 -- Total stakes for each team should not exceed 100
 DROP FUNCTION IF EXISTS total_stakes();
+DROP TRIGGER IF EXISTS total_stakes ON owner;
 
 CREATE FUNCTION total_stakes() RETURNS trigger AS $total_stakes$
 BEGIN
-  IF NEW.stake > 100 - (SELECT sum(owner.stake) FROM owner WHERE owner.team_id = NEW.team_id) THEN
+  IF NEW.stake > 100 - (SELECT coalesce(sum(owner.stake), 0) FROM owner WHERE owner.team_id = NEW.team_id) THEN
     RAISE EXCEPTION 'Total stakes for each team should not exceed 100';
   END IF;
 
@@ -174,14 +170,15 @@ BEGIN
 END;
 $total_stakes$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS total_stakes ON owner;
 CREATE TRIGGER total_stakes
-  BEFORE INSERT ON owner
+  BEFORE INSERT
+  ON owner
   FOR EACH ROW
   EXECUTE PROCEDURE total_stakes();
 
 -- Attendance in a match should not exceed the capacity of the venue
 DROP FUNCTION IF EXISTS attendance_capacity();
+DROP TRIGGER IF EXISTS attendance_capacity ON match;
 
 CREATE FUNCTION attendance_capacity() RETURNS trigger AS $attendance_capacity$
 BEGIN
@@ -193,29 +190,36 @@ BEGIN
 END;
 $attendance_capacity$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS attendance_capacity ON match;
 CREATE TRIGGER attendance_capacity
-  BEFORE INSERT ON match
+  BEFORE INSERT
+  ON match
   FOR EACH ROW
   EXECUTE PROCEDURE attendance_capacity();
 
 -- At most two Field umpire and one Third umpire per match
 DROP FUNCTION IF EXISTS umpire_count();
+DROP TRIGGER IF EXISTS umpire_count ON umpire_match;
 
 CREATE FUNCTION umpire_count() RETURNS trigger AS $umpire_count$
+DECLARE
+  num INT;
 BEGIN
-  IF NEW.role_desc = 'Field' AND 1 < (SELECT count(*) FROM umpire_match AS um WHERE um.match_id = NEW.match_id AND um.role_desc = 'Field') THEN
+  num := (SELECT count(*) FROM umpire_match AS um WHERE um.match_id = NEW.match_id AND um.role_desc = NEW.role_desc);
+
+  IF NEW.role_desc = 'Field' AND num >= 2 THEN
     RAISE EXCEPTION 'At most two Field umpire per match';
   END IF;
-  IF NEW.role_desc = 'Third' AND 0 < (SELECT count(*) FROM umpire_match AS um WHERE um.match_id = NEW.match_id AND um.role_desc = 'Third') THEN
+
+  IF NEW.role_desc = 'Third' AND num >= 1 THEN
     RAISE EXCEPTION 'At most one Third umpire per match';
   END IF;
+
   RETURN NEW;
 END;
 $umpire_count$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS umpire_count ON umpire_match;
 CREATE TRIGGER umpire_count
-  BEFORE INSERT ON umpire_match
+  BEFORE INSERT
+  ON umpire_match
   FOR EACH ROW
   EXECUTE PROCEDURE umpire_count();
