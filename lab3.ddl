@@ -160,3 +160,62 @@ CREATE TABLE ball_by_ball (
   FOREIGN KEY (non_striker) REFERENCES player ON DELETE SET NULL,
   FOREIGN KEY (bowler) REFERENCES player ON DELETE SET NULL
   );
+
+-- Total stakes for each team should not exceed 100
+DROP FUNCTION IF EXISTS total_stakes();
+
+CREATE FUNCTION total_stakes() RETURNS trigger AS $total_stakes$
+BEGIN
+  IF NEW.stake > 100 - (SELECT sum(stakes) FROM owner WHERE owner.team_id = NEW.team_id) THEN
+    RAISE EXCEPTION 'Total stakes for each team should not exceed 100';
+  END IF;
+
+  RETURN NEW;
+END;
+$total_stakes$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS total_stakes ON owner;
+CREATE TRIGGER total_stakes
+  BEFORE INSERT ON owner
+  FOR EACH ROW
+  EXECUTE PROCEDURE total_stakes();
+
+-- Attendance in a match should not exceed the capacity of the venue
+DROP FUNCTION IF EXISTS attendance_capacity();
+
+CREATE FUNCTION attendance_capacity() RETURNS trigger AS $attendance_capacity$
+BEGIN
+  IF NEW.attendance > (SELECT capacity FROM venue WHERE venue.venue_id = NEW.venue_id) THEN
+    RAISE EXCEPTION 'Attendance in a match should not exceed the capacity of the venue';
+  END IF;
+
+  RETURN NEW;
+END;
+$attendance_capacity$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS attendance_capacity ON match;
+CREATE TRIGGER attendance_capacity
+  BEFORE INSERT ON match
+  FOR EACH ROW
+  EXECUTE PROCEDURE attendance_capacity();
+
+-- At most two Field umpire and one Third umpire per match
+DROP FUNCTION IF EXISTS umpire_count();
+
+CREATE FUNCTION umpire_count() RETURNS trigger AS $umpire_count$
+BEGIN
+  IF NEW.role_desc = 'Field' AND 1 < (SELECT count(*) FROM umpire_match AS um WHERE um.match_id = NEW.match_id AND um.role_desc = 'Field') THEN
+    RAISE EXCEPTION 'At most two Field umpire per match';
+  END IF;
+  IF NEW.role_desc = 'Third' AND 0 < (SELECT count(*) FROM umpire_match AS um WHERE um.match_id = NEW.match_id AND um.role_desc = 'Third') THEN
+    RAISE EXCEPTION 'At most two Field umpire per match';
+  END IF;
+  RETURN NEW;
+END;
+$umpire_count$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS umpire_count ON umpire_match;
+CREATE TRIGGER umpire_count
+  BEFORE INSERT ON umpire_match
+  FOR EACH ROW
+  EXECUTE PROCEDURE umpire_count();
