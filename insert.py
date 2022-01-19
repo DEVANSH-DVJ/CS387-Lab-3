@@ -5,15 +5,8 @@ import os
 import psycopg2 as pg
 from psycopg2.extras import execute_values
 
-files = ['player.csv',
-         'umpire.csv',
-         'team.csv',
-         'owner.csv',
-         'venue.csv',
-         'match.csv',
-         'player_match.csv',
-         'umpire_match.csv',
-         'ball_by_ball.csv']
+tables = ['player', 'umpire', 'team', 'owner', 'venue', 'match',
+          'player_match', 'umpire_match', 'ball_by_ball']
 
 
 def ddl(cur, ddl_file):
@@ -27,17 +20,15 @@ def ddl(cur, ddl_file):
 
 
 def data(cur, data_folder):
-    for file_name in files:
-        with open(os.path.join(data_folder, file_name), 'r') as file:
+    for table in tables:
+        with open(os.path.join(data_folder, table + '.csv'), 'r') as file:
             reader = csv.reader(file)
             next(reader)
 
             # Takes 1.2s
             # for row in reader:
             #     try:
-            #         cur.execute('INSERT INTO {} VALUES {}'.format(
-            #             file_name.split('.')[0],
-            #             str(tuple(row))))
+            #         cur.execute('INSERT INTO {} VALUES {}'.format(table, str(tuple(row))))
             #     except Exception as error:
             #         print(error)
 
@@ -45,7 +36,7 @@ def data(cur, data_folder):
             values = []
             for row in reader:
                 values.append(tuple(row))
-            sql = 'INSERT INTO ' + file_name.split('.')[0] + ' VALUES %s'
+            sql = 'INSERT INTO {} VALUES %s'.format(table)
             try:
                 execute_values(cur, sql, values)
             except Exception as error:
