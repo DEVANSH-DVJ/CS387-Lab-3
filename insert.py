@@ -1,5 +1,6 @@
 import argparse
 import csv
+import os
 
 import psycopg2 as pg
 from psycopg2.extras import execute_values
@@ -27,7 +28,7 @@ def ddl(cur, ddl_file):
 
 def data(cur, data_folder):
     for file_name in files:
-        with open(data_folder + file_name, 'r') as file:
+        with open(os.path.join(data_folder, file_name), 'r') as file:
             reader = csv.reader(file)
             next(reader)
 
