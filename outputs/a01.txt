@@ -1,0 +1,16 @@
+1,MA Chidambaram Stadium, Chepauk,73,A Nehra
+2,Rajiv Gandhi International Stadium, Uppal,136,A Mishra
+3,Nehru Stadium,110,AB de Villiers
+4,Feroz Shah Kotla,394,DJ Hooda
+5,Dr DY Patil Sports Academy,231,MD Mishra
+6,Eden Gardens,334,AD Russell
+7,Sawai Mansingh Stadium,39,SK Trivedi
+8,M Chinnaswamy Stadium,162,CH Gayle
+9,Punjab Cricket Association Stadium, Mohali,19,MEK Hussey
+10,Subrata Roy Sahara Stadium,345,M Vohra
+11,Wankhede Stadium,197,GJ Bailey
+12,Maharashtra Cricket Association Stadium,310,JP Faulkner
+13,Sardar Patel Stadium, Motera,306,SPD Smith
+14,Rajiv Gandhi International Stadium Uppal,489,Rashid Khan
+15,Saurashtra Cricket Association Stadium,336,CA Lynn
+16,Holkar Cricket Stadium,374,AR Patel

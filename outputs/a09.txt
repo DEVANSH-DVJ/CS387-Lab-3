@@ -1,0 +1,8 @@
+Chennai Super Kings,100.000
+Kings XI Punjab,50.000
+Kolkata Knight Riders,83.333
+Mumbai Indians,62.500
+Rajasthan Royals,100.000
+Rising Pune Supergiants,50.000
+Royal Challengers Bangalore,60.000
+Sunrisers Hyderabad,100.000
